@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@theme{
+    --font-fair: "Montserrat", sans-serif;
+    --font-rope: "Open Sans", sans-serif;
+    --font-play: "Playfair Display", serif;
+    --color-primary: #FDF8F1;
+    --color-section: #F7EFE1;
+    --color-light: #241B14;
+    --accent-color: #CC8B3C;
+}
+
+html {
+    overflow-x: hidden;
+    max-width: 100%;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
+/* GPU-accelerate images for smoother scroll compositing */
+img {
+    content-visibility: auto;
+}
