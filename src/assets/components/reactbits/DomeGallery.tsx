@@ -318,13 +318,6 @@ export default function DomeGallery({
     applyTransform(rotationRef.current.x, rotationRef.current.y);
   }, []);
 
-  const stopInertia = useCallback(() => {
-    if (inertiaRAF.current) {
-      cancelAnimationFrame(inertiaRAF.current);
-      inertiaRAF.current = null;
-    }
-  }, []);
-
   useGesture(
     {
       onDragStart: ({ event }) => {
@@ -696,17 +689,6 @@ export default function DomeGallery({
                     tabIndex={0}
                     aria-label={it.alt || 'Open image'}
                     onClick={e => {
-                      if (draggingRef.current) return;
-                      if (movedRef.current) return;
-                      if (performance.now() - lastDragEndAt.current < 80) return;
-                      if (openingRef.current) return;
-                      openItemFromElement(e.currentTarget as HTMLElement);
-                    }}
-                    onPointerUp={e => {
-                      if ((e.nativeEvent as PointerEvent).pointerType !== 'touch') return;
-                      if (draggingRef.current) return;
-                      if (movedRef.current) return;
-                      if (performance.now() - lastDragEndAt.current < 80) return;
                       if (openingRef.current) return;
                       openItemFromElement(e.currentTarget as HTMLElement);
                     }}
