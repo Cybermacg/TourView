@@ -199,7 +199,7 @@ export const TestimonialSection = () => {
                     <div className="flex flex-col gap-6 pt-4">
                         <div className="w-full h-px bg-white/10" />
                         <div className="flex flex-col sm:flex-row justify-between items-center text-xs font-rope text-white/50 gap-4">
-                            <p>© 2024 Tourview Discovery. All rights reserved.</p>
+                            <p>© 2026 Tourview Discovery. All rights reserved.</p>
                             <div className="flex items-center gap-6">
                                 <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
                                 <a href="#" className="hover:text-white transition-colors">Terms of Service</a>

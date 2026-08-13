@@ -11,7 +11,7 @@ export const ImageGallerySection = () => {
     }))
     return(
         <section className="bg-black w-full min-h-screen">
-            <div className="w-full h-screen pointer-events-none">
+            <div className="w-full h-screen">
                 <DomeGallery
                     images={galleryImages}
                     fit={5}
@@ -22,7 +22,7 @@ export const ImageGallerySection = () => {
                     grayscale={false}
                     overlayBlurColor="#000000"
                     autoRotate={true}
-                    autoRotateSpeed={0.3}
+                    autoRotateSpeed={0.08}
                 />
             </div>
         </section>

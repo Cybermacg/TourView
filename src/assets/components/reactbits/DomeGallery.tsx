@@ -303,16 +303,14 @@ export default function DomeGallery({
     let lastTime = performance.now();
 
     const loop = (now: number) => {
-      const dt = Math.min((now - lastTime) / 1000, 0.1);
+      const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
 
-      const isDragging = draggingRef.current;
       const isEnlarged = rootRef.current?.getAttribute('data-enlarging') === 'true';
       const isOpening = openingRef.current;
-      const hasInertia = inertiaRAF.current !== null;
 
-      if (!isDragging && !isEnlarged && !isOpening && !hasInertia) {
-        const nextY = wrapAngleSigned(rotationRef.current.y + autoRotateSpeed * (dt * 60));
+      if (!isEnlarged && !isOpening) {
+        const nextY = rotationRef.current.y + autoRotateSpeed * (dt * 60);
         rotationRef.current.y = nextY;
         applyTransform(rotationRef.current.x, nextY);
       }
@@ -341,125 +339,30 @@ export default function DomeGallery({
     }
   }, []);
 
-  const startInertia = useCallback(
-    (vx: number, vy: number) => {
-      const MAX_V = 1.4;
-      let vX = clamp(vx, -MAX_V, MAX_V) * 80;
-      let vY = clamp(vy, -MAX_V, MAX_V) * 80;
-      let frames = 0;
-      const d = clamp(dragDampening ?? 0.6, 0, 1);
-      const frictionMul = 0.94 + 0.055 * d;
-      const stopThreshold = 0.015 - 0.01 * d;
-      const maxFrames = Math.round(90 + 270 * d);
-      const step = () => {
-        vX *= frictionMul;
-        vY *= frictionMul;
-        if (Math.abs(vX) < stopThreshold && Math.abs(vY) < stopThreshold) {
-          inertiaRAF.current = null;
-          return;
-        }
-        if (++frames > maxFrames) {
-          inertiaRAF.current = null;
-          return;
-        }
-        const nextX = clamp(rotationRef.current.x - vY / 200, -maxVerticalRotationDeg, maxVerticalRotationDeg);
-        const nextY = wrapAngleSigned(rotationRef.current.y + vX / 200);
-        rotationRef.current = { x: nextX, y: nextY };
-        applyTransform(nextX, nextY);
-        inertiaRAF.current = requestAnimationFrame(step);
-      };
-      stopInertia();
-      inertiaRAF.current = requestAnimationFrame(step);
-    },
-    [dragDampening, maxVerticalRotationDeg, stopInertia]
-  );
-
   useGesture(
     {
       onDragStart: ({ event }) => {
         if (focusedElRef.current) return;
-        stopInertia();
-
         const evt = event as PointerEvent;
-        pointerTypeRef.current = (evt.pointerType as any) || 'mouse';
-        draggingRef.current = true;
-        cancelTapRef.current = false;
-        movedRef.current = false;
-        startRotRef.current = { ...rotationRef.current };
-        startPosRef.current = { x: evt.clientX, y: evt.clientY };
         const potential = (evt.target as Element).closest?.('.item__image') as HTMLElement | null;
         tapTargetRef.current = potential || null;
+        startPosRef.current = { x: evt.clientX, y: evt.clientY };
       },
-      onDrag: ({ event, last, velocity: velArr = [0, 0], direction: dirArr = [0, 0], movement }) => {
-        if (focusedElRef.current || !draggingRef.current || !startPosRef.current) return;
-
-        const evt = event as PointerEvent;
-
-        const dxTotal = evt.clientX - startPosRef.current.x;
-        const dyTotal = evt.clientY - startPosRef.current.y;
-
-        if (!movedRef.current) {
-          const dist2 = dxTotal * dxTotal + dyTotal * dyTotal;
-          if (dist2 > 16) movedRef.current = true;
-        }
-
-        const nextX = clamp(
-          startRotRef.current.x - dyTotal / dragSensitivity,
-          -maxVerticalRotationDeg,
-          maxVerticalRotationDeg
-        );
-        const nextY = startRotRef.current.y + dxTotal / dragSensitivity;
-
-        const cur = rotationRef.current;
-        if (cur.x !== nextX || cur.y !== nextY) {
-          rotationRef.current = { x: nextX, y: nextY };
-          applyTransform(nextX, nextY);
-        }
-
-        if (last) {
-          draggingRef.current = false;
-          let isTap = false;
-
-          if (startPosRef.current) {
-            const dx = evt.clientX - startPosRef.current.x;
-            const dy = evt.clientY - startPosRef.current.y;
-            const dist2 = dx * dx + dy * dy;
-            const TAP_THRESH_PX = pointerTypeRef.current === 'touch' ? 10 : 6;
-            if (dist2 <= TAP_THRESH_PX * TAP_THRESH_PX) {
-              isTap = true;
-            }
-          }
-
-          let [vMagX, vMagY] = velArr;
-          const [dirX, dirY] = dirArr;
-          let vx = vMagX * dirX;
-          let vy = vMagY * dirY;
-
-          if (!isTap && Math.abs(vx) < 0.001 && Math.abs(vy) < 0.001 && Array.isArray(movement)) {
-            const [mx, my] = movement;
-            vx = (mx / dragSensitivity) * 0.02;
-            vy = (my / dragSensitivity) * 0.02;
-          }
-
-          if (!isTap && (Math.abs(vx) > 0.005 || Math.abs(vy) > 0.005)) {
-            startInertia(vx, vy);
-          }
-          startPosRef.current = null;
-          cancelTapRef.current = !isTap;
-
-          if (isTap && tapTargetRef.current && !focusedElRef.current) {
+      onDrag: ({ event, last }) => {
+        if (last && startPosRef.current) {
+          const evt = event as PointerEvent;
+          const dx = evt.clientX - startPosRef.current.x;
+          const dy = evt.clientY - startPosRef.current.y;
+          const dist2 = dx * dx + dy * dy;
+          if (dist2 <= 144 && tapTargetRef.current && !focusedElRef.current && !openingRef.current) {
             openItemFromElement(tapTargetRef.current);
           }
           tapTargetRef.current = null;
-
-          if (cancelTapRef.current) setTimeout(() => (cancelTapRef.current = false), 120);
-          if (pointerTypeRef.current === 'touch') unlockScroll();
-          if (movedRef.current) lastDragEndAt.current = performance.now();
-          movedRef.current = false;
+          startPosRef.current = null;
         }
       }
     },
-    { target: mainRef, eventOptions: { passive: false } }
+    { target: mainRef, eventOptions: { passive: true } }
   );
 
   useEffect(() => {
