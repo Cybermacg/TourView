@@ -3,7 +3,7 @@ import { usePexelSearch } from "../hooks/usePexelsClient";
  import DomeGallery from '../assets/components/reactbits/DomeGallery';
 export const ImageGallerySection = () => {
     const searchTerm = useSearchStore((state) => state.searchTerm);
-    const { data: pexelsData, isLoading, isError } = usePexelSearch(searchTerm);
+    const { data: pexelsData } = usePexelSearch(searchTerm);
     const photos = pexelsData?.photos ?? [];
     const galleryImages = photos.map((photo) => ({
         src: photo.src.portrait,

@@ -29,11 +29,21 @@ export default defineConfig({
     // Split large vendor libs into separate cached chunks
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom'],
-          'vendor-motion': ['motion'],
-          'vendor-query': ['@tanstack/react-query'],
-          'vendor-icons': ['react-icons'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('motion')) {
+              return 'vendor-motion';
+            }
+            if (id.includes('@tanstack/react-query')) {
+              return 'vendor-query';
+            }
+            if (id.includes('react-icons')) {
+              return 'vendor-icons';
+            }
+          }
         },
       },
     },
