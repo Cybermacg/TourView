@@ -74,10 +74,6 @@ const DEFAULTS = {
 
 const clamp = (v: number, min: number, max: number) => Math.min(Math.max(v, min), max);
 const normalizeAngle = (d: number) => ((d % 360) + 360) % 360;
-const wrapAngleSigned = (deg: number) => {
-  const a = (((deg + 180) % 360) + 360) % 360;
-  return a - 180;
-};
 const getDataNumber = (el: HTMLElement, name: string, fallback: number) => {
   const attr = el.dataset[name] ?? el.getAttribute(`data-${name}`);
   const n = attr == null ? NaN : parseFloat(attr);
@@ -148,11 +144,8 @@ export default function DomeGallery({
   maxRadius = Infinity,
   padFactor = 0.25,
   overlayBlurColor = '#120F17',
-  maxVerticalRotationDeg = DEFAULTS.maxVerticalRotationDeg,
-  dragSensitivity = DEFAULTS.dragSensitivity,
   enlargeTransitionMs = 400,
   segments = DEFAULTS.segments,
-  dragDampening = 2,
   openedImageWidth = 'min(700px, 85vw)',
   openedImageHeight = 'min(700px, 80vh)',
   imageBorderRadius = '30px',
@@ -176,17 +169,10 @@ export default function DomeGallery({
   } | null>(null);
 
   const rotationRef = useRef({ x: 0, y: 0 });
-  const startRotRef = useRef({ x: 0, y: 0 });
   const startPosRef = useRef<{ x: number; y: number } | null>(null);
-  const draggingRef = useRef(false);
-  const cancelTapRef = useRef(false);
-  const movedRef = useRef(false);
-  const inertiaRAF = useRef<number | null>(null);
-  const pointerTypeRef = useRef<'mouse' | 'pen' | 'touch'>('mouse');
   const tapTargetRef = useRef<HTMLElement | null>(null);
   const openingRef = useRef(false);
   const openStartedAtRef = useRef(0);
-  const lastDragEndAt = useRef(0);
 
   const scrollLockedRef = useRef(false);
   const lockScroll = useCallback(() => {
