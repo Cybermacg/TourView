@@ -8,7 +8,7 @@ export const useSearchCountry = (searchTerm: string) => {
         queryFn: async () => {
             const encodedTerm = encodeURIComponent(searchTerm.trim());
             const response = await axios.get(
-                `https://api.restcountries.com/countries/v5/name?q=${encodedTerm}`, {
+                `/api/restcountries/countries/v5/name?q=${encodedTerm}`, {
                     headers: {
                         'Authorization': `Bearer ${import.meta.env.VITE_REST_API_KEY}`
                     },

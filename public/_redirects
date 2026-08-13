@@ -1,0 +1,2 @@
+/api/restcountries/*  https://api.restcountries.com/:splat  200!
+/*  /index.html  200
